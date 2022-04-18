@@ -1,0 +1,34 @@
+---
+title: "KmeansPackage"
+author: "Gideon Parry"
+date: "2/19/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We will first create our package structure. Go to the directory where you want your package to be created:
+```{r create}
+setwd("C:\\Users\\Owner\\Documents\\Math_3190\\github")
+devtools::create("kmeans")
+```
+
+You can automate your license selection with the **usethis** package in the tidyverse: 
+
+```{r license}
+setwd
+usethis::use_mit_license()
+```
+
+
+
+```{r install0, eval=FALSE }
+devtools::document()
+
+devtools::install()
+
+usethis::use_testthat()
+```
+
