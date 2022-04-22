@@ -1,5 +1,19 @@
+#' gets best k value for knn of iris data
+#' 
+#' Take checked colums from the iris dataset and provieds the accuracy maximizing k
+#'
+#' @param varlist The list of variables
 
-knn_best_k <- function(){
+#' @return Best k value for given varibles.
+#' @keywords keywords
+#'
+#' @export
+#' 
+#' @examples
+#' knn_best_k(c('Sepal.Length','Sepal.Width','Petal.Length')) 
+
+
+knn_best_k <- function(varlist){
 ks <- seq(1, 100, 1)
 set.seed(123)
 
@@ -7,13 +21,13 @@ idx = sample(1:nrow(iris), size = 100)
 train.idx = 1:nrow(iris) %in% idx
 test.idx =  ! 1:nrow(iris) %in% idx
 
-train = iris[train.idx, 1:5]
-test = iris[test.idx, 1:5]
+cols <- colnames(iris) %in% c(varlist, 'Species')
+train = iris[train.idx, cols]
+test = iris[test.idx, cols]
 
-library(purrr)
-library(tidyverse)
+
 accuracy <- map_df(ks, function(k){
-  fit <- knn3(Species ~., data =train, k = k)
+  fit <- knn3(Species ~ ., data =train, k = k)
   y_hat <- predict(fit, train, type = "class")
   cm_train <- confusionMatrix(y_hat, train$Species)
   train_error <- cm_train$overall["Accuracy"]
@@ -27,4 +41,3 @@ return(
 ks[which.max(accuracy$test)]
 )
 }
-knn_best_k()

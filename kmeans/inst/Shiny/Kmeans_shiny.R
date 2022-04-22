@@ -1,51 +1,50 @@
 library(shiny)
-library(ggplot2)
+library(umap)
+library(caret)
+library(purrr)
+library(tidyverse)
+library(kmeans)
+library(plyr)
+library(class)
+
 
 ui <- shinyUI(fluidPage(
   
   titlePanel("Iris K means"),
   
   fluidRow(
-    column(2,
-           textInput(inputId = "number", label = "number of selectInput",value = 2)
-    ),
+  
     column(8,
            plotOutput("kmeansplot")),
     column(2,
-           uiOutput(outputId = "putselect")),
+           checkboxGroupInput('vars', 'Clustering Variables', names(iris[,-5]),
+                              selected = names(iris[,c(1,2)]))),
+  
     column(2,
            numericInput('clusters', 'Cluster count', 3,
                         min = 1, max = 9),
     ),
-    column(2,
-           numericInput('k', 'KNN K value', 3,
-                        min = 1, max = 9),
-    ),
     
-    #column(2,
-     #      textOutput('best_k', 'Best K value')
-    #),
-    
-    column(8,
-           plotOutput("knnplot"))
-  )
+  ),
+  titlePanel("Iris KNN"),
+  numericInput('k', 'KNN K value', 3,
+               min = 1, max = 9),
+  textOutput('best_k'),
+  plotOutput("knnplot"),
+  plotOutput("PCA"),
+  plotOutput("UMAP")
+  
 ))
 
 server <- shinyServer(function(input, output) {
   
   
   
-  output$putselect = renderUI(
-    if(input$number != 0 ){
-      lapply(1:(input$number), function(i){
-        selectInput(inputId = paste0("var",i), label = paste0("input ",i), choices   = names(iris))
-      })
-    }
-  )
-  
   selectedData <- reactive({
-    iris[, c(input$var1, input$var2)]
+    iris[, c(input$vars)]
   })
+  
+
   
   clusters <- reactive({
     cluser_create(selectedData(), input$clusters)
@@ -62,11 +61,33 @@ server <- shinyServer(function(input, output) {
     points(clusters()$centers, pch = 4, cex = 4, lwd = 4)
   })
   
-  
+  output$best_k <- renderText({
+    paste("KNN Best K =",knn_best_k(c(input$vars)))
+  })
   
   output$knnplot <- renderPlot({
-    knn_plot(input$var1,input$var2, input$k)
+    knn_plot(input$vars, input$k)
   })
+  output$PCA <- renderPlot({
+    x = data.matrix(iris[,input$vars])
+    pca_bball <- prcomp(x)
+    summary(pca_bball)
+    
+    data.frame(pca_bball$x[,1:2], Species = iris$Species) %>%
+      ggplot(aes(PC1,PC2, fill = Species))+
+      geom_point(cex=3, pch=21, ) +
+      coord_fixed(ratio = 1)+
+      labs(title = "PCA of Iris")
+  })
+  output$UMAP <- renderPlot({
+    umap_iris <- umap(iris[,input$vars])
+    data.frame(umap_iris$layout, Species = iris$Species) %>%
+      ggplot(aes(X1,X2, fill = Species))+
+      geom_point(cex=3, pch=21) +
+      coord_fixed(ratio = 1)+
+      labs(title = "Umap of Iris")
+  })
+  
 })
 
 shinyApp(ui = ui, server = server)

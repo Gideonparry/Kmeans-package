@@ -1,11 +1,22 @@
-library(plyr)
-library(ggplot2)
-library(class)
-library(caret)
+#' Plots KNN of iris data
+#' 
+#' Take checked colums from the iris dataset and plots the kmeans output with the top 2 selected on the x 
+#' and y axis
+#'
+#' @param varlist The list of variables
+
+#' @return Graph of kmeans colored by species
+#'
+#' @keywords keywords
+#'
+#' @export
+#' 
+#' @examples
+#' knn_best_k(c('Sepal.Length','Sepal.Width','Petal.Length')) 
 
 
 
-knn_plot <- function(v1, v2, k){
+knn_plot <- function(vlist, k){
   
 set.seed(123)
 # Create training and testing data sets
@@ -30,7 +41,7 @@ plot.df = data.frame(test, predicted = y_hat_knn)
 
 
 
-return(ggplot(plot.df, aes_string(v1, v2, color = "predicted", fill = "predicted")) + 
+return(ggplot(plot.df, aes_string(vlist[1],vlist[2], color = "predicted", fill = "predicted")) + 
   geom_point(size = 5) )+
   ggtitle("KNN Plot") +
   theme(plot.title = element_text(hjust = 0.5))
